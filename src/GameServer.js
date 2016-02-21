@@ -7,6 +7,8 @@ var ini = require('./modules/ini.js');
 // GameServer Constructor
 function GameServer(){
 	this.clients = [];
+    this.run = true;
+    this.nodesPlayer = []; // Nodes controlled by players
 
 	 // Config
     this.config = { // Border - Right: X increases, Down: Y increases (as of 2015-05-20)
@@ -153,8 +155,6 @@ GameServer.prototype.start = function() {
         ws.on('close', close.bind(bindObject));
         this.clients.push(ws);
     }
-
-    this.startStatsServer(this.config.serverStatsPort);
 };
 
 
@@ -180,47 +180,49 @@ GameServer.prototype.mainLoop = function() {
 
 
 GameServer.prototype.updateMoveEngine = function() {
-    // Move player cells
+    // Move player ships
     var len = this.nodesPlayer.length;
 
     for (var i = 0; i < len; i++) {
-        var cell = this.nodesPlayer[i];
+        var ship = this.nodesPlayer[i];
 
-        var client = cell.owner;
+        var client = ship.owner;
 
-        cell.calcMove(client.mouse.x, client.mouse.y, this);
+        ship.calcMove(client.mouse.x, client.mouse.y, this);
+        console.log("test var ", client);
     }
 
     // A system to move cells not controlled by players (ex. viruses, ejected mass)
-    len = this.movingNodes.length;
-    for (var i = 0; i < len; i++) {
-        var check = this.movingNodes[i];
+    // len = this.movingNodes.length;
+    // for (var i = 0; i < len; i++) {
+    //     var check = this.movingNodes[i];
 
-        // Recycle unused nodes
-        while ((typeof check == "undefined") && (i < this.movingNodes.length)) {
-            // Remove moving cells that are undefined
-            this.movingNodes.splice(i, 1);
-            check = this.movingNodes[i];
-        }
+    //     // Recycle unused nodes
+    //     while ((typeof check == "undefined") && (i < this.movingNodes.length)) {
+    //         // Remove moving cells that are undefined
+    //         this.movingNodes.splice(i, 1);
+    //         check = this.movingNodes[i];
+    //     }
 
-        if (i >= this.movingNodes.length) {
-            continue;
-        }
+    //     if (i >= this.movingNodes.length) {
+    //         continue;
+    //     }
 
-        if (check.moveEngineTicks > 0) {
-            check.onAutoMove(this);
-            // If the cell has enough move ticks, then move it
-            check.calcMovePhys(this.config);
-        } else {
-            // Auto move is done
-            check.moveDone(this);
-            // Remove cell from list
-            var index = this.movingNodes.indexOf(check);
-            if (index != -1) {
-                this.movingNodes.splice(index, 1);
-            }
-        }
-    }
+    //     if (check.moveEngineTicks > 0) {
+    //         check.onAutoMove(this);
+    //         // If the cell has enough move ticks, then move it
+    //         check.calcMovePhys(this.config);
+    //     } else {
+    //         // Auto move is done
+    //         check.moveDone(this);
+    //         // Remove cell from list
+    //         var index = this.movingNodes.indexOf(check);
+    //         if (index != -1) {
+    //             this.movingNodes.splice(index, 1);
+    //         }
+    //     }
+    // }
+
 
     // Another, special check for player cells, which are actually never moving (but are moving here)
     len = this.nodesPlayer.length;
@@ -240,5 +242,15 @@ GameServer.prototype.updateMoveEngine = function() {
 
         check.onAutoMove(this);
         check.calcMovePhys(this.config);
+    }
+};
+
+GameServer.prototype.updateClients = function() {
+    for (var i = 0; i < this.clients.length; i++) {
+        if (typeof this.clients[i] == "undefined") {
+            continue;
+        }
+
+        this.clients[i].playerTracker.update();
     }
 };
