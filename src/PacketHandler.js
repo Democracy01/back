@@ -34,8 +34,8 @@ PacketHandler.prototype.handleMessage = function(message) {
             // Set Target
             if (view.byteLength == 13) {
                 var client = this.socket.playerTracker;
-                client.mouse.x = view.getInt32(1, true) - client.scrambleX;
-                client.mouse.y = view.getInt32(5, true) - client.scrambleY;
+                client.mouse.x = view.getInt32(1, true);
+                client.mouse.y = view.getInt32(5, true);
             }
             break;
         case 255:
@@ -45,10 +45,10 @@ PacketHandler.prototype.handleMessage = function(message) {
                 // Send SetBorder packet first
                 var c = this.gameServer.config;
                 this.socket.sendPacket(new Packet.SetBorder(
-                    c.borderLeft + this.socket.playerTracker.scrambleX,
-                    c.borderRight + this.socket.playerTracker.scrambleX,
-                    c.borderTop + this.socket.playerTracker.scrambleY,
-                    c.borderBottom + this.socket.playerTracker.scrambleY
+                    c.borderLeft,
+                    c.borderRight,
+                    c.borderTop,
+                    c.borderBottom
                 ));
             }
             break;
