@@ -1,5 +1,5 @@
 // Library imports
-var WebSocket = require('ws');
+var WebSocket = require('./WebSocket.js');
 var http = require('http');
 var fs = require("fs");
 var ini = require('./modules/ini.js');
@@ -189,27 +189,6 @@ GameServer.prototype.updateMoveEngine = function() {
         var client = cell.owner;
 
         cell.calcMove(client.mouse.x, client.mouse.y, this);
-
-        // Check if cells nearby
-        var list = this.getCellsInRange(cell);
-        for (var j = 0; j < list.length; j++) {
-            var check = list[j];
-
-            // if we're deleting from this.nodesPlayer, fix outer loop variables; we need to update its length, and maybe 'i' too
-            if (check.cellType == 0) {
-                len--;
-                if (check.nodeId < cell.nodeId) {
-                    i--;
-                }
-            }
-
-            // Consume effect
-            check.onConsume(cell, this);
-
-            // Remove cell
-            check.setKiller(cell);
-            this.removeNode(check);
-        }
     }
 
     // A system to move cells not controlled by players (ex. viruses, ejected mass)
